@@ -1,18 +1,22 @@
 using System.Collections;
-using System.Collections.Generic;
 using UnityEngine;
 
 public class Card : MonoBehaviour
 {
+    public CardSlot filledSpot;
+    private AudioSource source;
+
     private const float FLIPPED_VALUE = 270f;
     private const float UNFLIPPED_VALUE = 90f;
 
-    private AudioSource source;
+    private const float MOVE_SPEED = 24f;
+    private const float FLIP_SPEED = 3f;
 
-    private int number = 1;
+
+    private string number = "One";
     private string color = "Red";
     
-    public int Number { get { return number; } }
+    public string Number { get { return number; } }
     public string Color { get { return color; } }
 
     // false means logo is showing, true means number and color is showing
@@ -20,18 +24,30 @@ public class Card : MonoBehaviour
     public bool Flipped { get { return flipped; } }
     private bool isFlipping = false;
     private bool isMoving = false;
+    public bool IsMoving { get { return isMoving; } }
+
+    private bool ownedByPlayer = false;
+    public bool OwnedByPlayer { get { return ownedByPlayer; } }
 
     private void Awake() 
     {
         source = GetComponent<AudioSource>();
     }
 
+    public void SetAttributes(string c, string num, Texture texture, bool owned)
+    {
+        color = c;
+        number = num;
+        ownedByPlayer = owned;
+        GetComponent<MeshRenderer>().material.SetTexture("_MainTex", texture);
+    }
+
+    // Flips the card over
     public IEnumerator FlipCard() 
     {
         if (isFlipping) { yield break; }
 
         isFlipping = true;
-        const float SPEED = 2f;
         float timer = 0f;
         float rotAmnt = transform.eulerAngles.y;
 
@@ -39,12 +55,12 @@ public class Card : MonoBehaviour
 
         while (timer < 1f) {
             if (!flipped) {
-                rotAmnt = Mathf.Lerp(FLIPPED_VALUE, UNFLIPPED_VALUE, timer * SPEED);
+                rotAmnt = Mathf.Lerp(FLIPPED_VALUE, UNFLIPPED_VALUE, timer * FLIP_SPEED);
             }
             else {
-                rotAmnt = Mathf.Lerp(UNFLIPPED_VALUE, FLIPPED_VALUE, timer * SPEED);
+                rotAmnt = Mathf.Lerp(UNFLIPPED_VALUE, FLIPPED_VALUE, timer * FLIP_SPEED);
             }
-            
+
             transform.rotation = Quaternion.Euler(0f, rotAmnt, 0f);
             timer += Time.deltaTime;
             yield return new WaitForEndOfFrame();
@@ -55,18 +71,28 @@ public class Card : MonoBehaviour
         isFlipping = false;
     }
 
-    public IEnumerator MoveCard(Vector2 to) 
+    // Moves the card to a position overtime
+    public IEnumerator MoveCard(Vector3 to, bool leaveSpot) 
     {
+        // Returns if already moving
         if (isMoving) { yield break; }
+        isMoving = true;
 
-        const float SPEED = 2f;
-        float timer = 0f;
+        if (leaveSpot && filledSpot) { 
+            filledSpot.SetFilled(false);
+            filledSpot = null;
+        }
 
-        while (true) {
-            transform.position = Vector2.MoveTowards(transform.position, to, timer * SPEED);
-            timer += Time.deltaTime;
+        // Moves card towards vector2 position
+        while (transform.position != to) {
+            transform.position = Vector3.MoveTowards(transform.position, to, Time.deltaTime * MOVE_SPEED);
             yield return new WaitForEndOfFrame();
         }
 
+        // Snaps card to position and sets flag to false
+        transform.position = to;
+        isMoving = false;
     }
+
+    public void SetColor(string c) => color = c;
 }
