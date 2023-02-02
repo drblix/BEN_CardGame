@@ -117,6 +117,7 @@ public class DrawingDeck : MonoBehaviour
     {
         string chosenColor = cardColors[Random.Range(0, cardColors.Length)];
         string chosenNumber = cardNumbers[Random.Range(0, cardNumbers.Length)];
+
         string combinedStr = chosenColor + chosenNumber;
         Texture chosenText = null;
 

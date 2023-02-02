@@ -80,8 +80,8 @@ public class Computer : MonoBehaviour
             StartCoroutine(NotifyWildCard(chosenColor));
 
             StartCoroutine(wildCards[0].FlipCard());
-            placingDeck.PlaceCard(wildCards[0], 1);
             computerDeck.Remove(wildCards[0]);
+            placingDeck.PlaceCard(wildCards[0], 1);
             StartCoroutine(drawingDeck.ShiftCards(1));
 
             return true;
