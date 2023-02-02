@@ -4,11 +4,14 @@ using UnityEngine;
 
 public class DrawingDeck : MonoBehaviour
 {
+    public bool gameOver = false;
+
     private const int DECK_SIZE = 22;
     private const int STARTING_DECK = 7;
 
     private Player player;
     private Computer computer;
+    private PlacingDeck placingDeck;
 
     [SerializeField]
     private GameObject playingCard;
@@ -36,6 +39,7 @@ public class DrawingDeck : MonoBehaviour
     {
         player = FindObjectOfType<Player>();
         computer = FindObjectOfType<Computer>();
+        placingDeck = FindObjectOfType<PlacingDeck>();
         GetComponent<BoxCollider>().enabled = false;
         player.playerDeck.Capacity = DECK_SIZE;
         StartCoroutine(StartingCards());
@@ -55,17 +59,29 @@ public class DrawingDeck : MonoBehaviour
     }
 
     public IEnumerator DealCards(int amount, int toDeck) {
+        List<Card> deck = toDeck == 0 ? player.playerDeck : computer.computerDeck;
+
         for (int i = 0; i < amount; i++) {
             yield return new WaitForSeconds(.35f);
             DrawCard(toDeck);
+            if (deck.Count == DECK_SIZE) {
+                gameOver = true;
+                StartCoroutine(placingDeck.DisplayVictor("UNLUCKY..."));
+            }
         }
     }
 
     // 0 == Player; 1 == Computer
     public void DrawCard(int drawer)
     {
-        if (drawer == 0 && player.playerDeck.Count < DECK_SIZE)
+        if (drawer == 0)
         {
+            if (player.playerDeck.Count == DECK_SIZE) {
+                gameOver = true;
+                StartCoroutine(placingDeck.DisplayVictor("UNLUCKY..."));
+                return;
+            }
+
             Card card = Instantiate(playingCard, transform.position, Quaternion.Euler(0f, 270f, 0f)).GetComponent<Card>();
             card.GetComponent<AudioSource>().Play();
 
@@ -74,9 +90,16 @@ public class DrawingDeck : MonoBehaviour
             player.playerDeck.Add(card);
             Vector2 slot = FindNextOpenSlot(card, drawer);
             StartCoroutine(card.MoveCard(slot, false));
+            StartCoroutine(card.FlipCard());
         }
         else if (drawer == 1)
         {
+            if (computer.computerDeck.Count == DECK_SIZE) {
+                gameOver = true;
+                StartCoroutine(placingDeck.DisplayVictor("PLAYER"));
+                return;
+            }
+
             Card card = Instantiate(playingCard, transform.position, Quaternion.Euler(0f, 270f, 0f)).GetComponent<Card>();
             card.GetComponent<AudioSource>().Play();
 
@@ -161,7 +184,6 @@ public class DrawingDeck : MonoBehaviour
     public IEnumerator ShiftCards(int deck)
     {
         List<Card> chosenDeck = deck == 0 ? player.playerDeck : computer.computerDeck;
-
         foreach (Card card in chosenDeck)
         {
             card.filledSpot.SetFilled(false);

@@ -1,7 +1,8 @@
 using System.Collections;
 using System.Collections.Generic;
 using UnityEngine;
-using UnityEngine.UI;
+using UnityEngine.SceneManagement;
+using TMPro;
 
 public class PlacingDeck : MonoBehaviour
 {
@@ -14,10 +15,19 @@ public class PlacingDeck : MonoBehaviour
     [SerializeField]
     private GameObject wildcardMenu;
 
+    [SerializeField]
+    private AudioClip[] clips;
+
     private List<Card> placedCards = new List<Card>();
 
     private Card topCard;
     public Card TopCard { get { return topCard; } }
+
+    [SerializeField]
+    private TextMeshProUGUI notification;
+
+    [SerializeField]
+    private bool cheatMode = false;
 
     private void Awake()
     {
@@ -61,6 +71,15 @@ public class PlacingDeck : MonoBehaviour
             }
         }
 
+        if (player.playerDeck.Count == 0) {
+            StartCoroutine(DisplayVictor("PLAYER"));
+            return;
+        }
+        else if (computer.computerDeck.Count == 0) {
+            StartCoroutine(DisplayVictor("COMPUTER"));
+            return;
+        }
+
         if (card.Number == "Wild" && fromDeck == 0) {
             // Show UI and wait for response
             wildcardMenu.SetActive(true);
@@ -92,7 +111,7 @@ public class PlacingDeck : MonoBehaviour
 
     public bool CanPlaceCard(Card card)
     {
-        if (!topCard) { return true; }
+        if (!topCard || cheatMode) { return true; }
 
         string topCardColor = topCard.Color;
         string topCardNumber = topCard.Number;
@@ -115,5 +134,45 @@ public class PlacingDeck : MonoBehaviour
 
         // START AI
         StartCoroutine(computer.StartTurn());
+    }
+
+    public IEnumerator DisplayVictor(string winner)
+    {
+        drawingDeck.gameOver = true;
+        AudioSource source = GetComponent<AudioSource>();
+
+        if (winner != "UNLUCKY...") {
+            notification.SetText(winner.ToUpper() + " WINS!");
+        }
+        else {
+            notification.SetText(winner);
+        }
+
+        notification.transform.parent.gameObject.SetActive(true);
+
+        if (winner.Equals("PLAYER")) {
+            source.clip = clips[0];
+            source.Play();
+        }
+        else{
+            source.clip = clips[1];
+            source.Play();
+        }
+
+        yield return new WaitForSeconds(5f);
+
+        notification.SetText("PLAY AGAIN?");
+        notification.transform.parent.Find("YesBtn").gameObject.SetActive(true);
+        notification.transform.parent.Find("NoBtn").gameObject.SetActive(true);
+    }
+
+    public void PlayAgainChoice(string yn)
+    {
+        if (yn.Equals("y")) {
+            SceneManager.LoadScene(1);
+        }
+        else {
+            SceneManager.LoadScene(0);
+        }
     }
 }

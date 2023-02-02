@@ -14,7 +14,7 @@ public class Computer : MonoBehaviour
     [SerializeField]
     private TextMeshProUGUI wildNotification;
 
-    private void Awake() 
+    private void Awake()
     {
         player = FindObjectOfType<Player>();
         placingDeck = FindObjectOfType<PlacingDeck>();
@@ -25,14 +25,18 @@ public class Computer : MonoBehaviour
     {
         Debug.Log(placingDeck.TopCard.ToString());
         yield return new WaitForSeconds(Random.Range(1.5f, 3.25f));
-        while (!PlaceCard()) {
+        while (!PlaceCard())
+        {
             drawingDeck.DrawCard(1);
             yield return new WaitUntil(() => !drawingDeck.CardsMoving(computerDeck));
             yield return new WaitForSeconds(Random.Range(.4f, .9f));
         }
 
-        player.isTurn = true;
-        Debug.Log("PLAYER'S TURN");
+        if (!drawingDeck.gameOver)
+        {
+            player.isTurn = true;
+            Debug.Log("PLAYER'S TURN");
+        }
     }
 
     /// <summary>
@@ -41,30 +45,46 @@ public class Computer : MonoBehaviour
     /// <returns>Returns true if placed a card</returns>
     private bool PlaceCard()
     {
+        List<Card> wildCards = new List<Card>();
+
         foreach (Card card in computerDeck)
         {
+            // Treats wildcards as a last resort for the AI
             if (card.Number == "Wild") {
-                card.filledSpot.SetFilled(false);
-                card.filledSpot = null;
-                string chosenColor = DetermineWildColor();
-                card.SetColor(chosenColor);
-                StartCoroutine(NotifyWildCard(chosenColor));
-                StartCoroutine(card.FlipCard());
-                placingDeck.PlaceCard(card, 1);
-                drawingDeck.ShiftCards(1);
-                computerDeck.Remove(card);
-                return true;
+                wildCards.Add(card);
+                continue;
             }
 
-            if (placingDeck.TopCard.Color == card.Color || placingDeck.TopCard.Number == card.Number) {
+            if (placingDeck.TopCard.Color == card.Color || placingDeck.TopCard.Number == card.Number)
+            {
                 card.filledSpot.SetFilled(false);
                 card.filledSpot = null;
+
                 StartCoroutine(card.FlipCard());
-                placingDeck.PlaceCard(card, 1);
-                drawingDeck.ShiftCards(1);
                 computerDeck.Remove(card);
+                placingDeck.PlaceCard(card, 1);
+                StartCoroutine(drawingDeck.ShiftCards(1));
+
                 return true;
             }
+        }
+
+        if (wildCards.Count > 0)
+        {
+            wildCards[0].filledSpot.SetFilled(false);
+            wildCards[0].filledSpot = null;
+
+            string chosenColor = DetermineWildColor();
+            wildCards[0].SetColor(chosenColor);
+
+            StartCoroutine(NotifyWildCard(chosenColor));
+
+            StartCoroutine(wildCards[0].FlipCard());
+            placingDeck.PlaceCard(wildCards[0], 1);
+            computerDeck.Remove(wildCards[0]);
+            StartCoroutine(drawingDeck.ShiftCards(1));
+
+            return true;
         }
 
         return false;
@@ -72,8 +92,8 @@ public class Computer : MonoBehaviour
 
     private string DetermineWildColor()
     {
-        string[] colors = {"Red", "Blue", "Green", "Yellow"};
-        int[] clrAmnts = {0, 0, 0, 0};
+        string[] colors = { "Red", "Blue", "Green", "Yellow" };
+        int[] clrAmnts = { 0, 0, 0, 0 };
 
         foreach (Card card in computerDeck)
         {
@@ -99,7 +119,8 @@ public class Computer : MonoBehaviour
 
         int largestIndex = LargestElement(clrAmnts);
 
-        if (largestIndex != -1) {
+        if (largestIndex != -1)
+        {
             switch (largestIndex)
             {
                 case 0:
@@ -114,7 +135,8 @@ public class Computer : MonoBehaviour
                     return colors[Random.Range(0, colors.Length)];
             }
         }
-        else {
+        else
+        {
             return colors[Random.Range(0, colors.Length)];
         }
     }
@@ -129,17 +151,21 @@ public class Computer : MonoBehaviour
         int? maxValue = null;
         int index = -1;
 
-        for (int i = 0; i < arr.Length; i++) {
+        for (int i = 0; i < arr.Length; i++)
+        {
             int curNum = arr[i];
-            if (!maxValue.HasValue || curNum > maxValue.Value) {
+            if (!maxValue.HasValue || curNum > maxValue.Value)
+            {
                 maxValue = curNum;
                 index = i;
             }
         }
 
         // Checks if there are multiple "largest numbers"
-        for (int i = 0; i < arr.Length; i++) {
-            if (arr[i] == arr[index] && i != index) {
+        for (int i = 0; i < arr.Length; i++)
+        {
+            if (arr[i] == arr[index] && i != index)
+            {
                 return -1;
             }
         }
@@ -151,24 +177,26 @@ public class Computer : MonoBehaviour
     {
         wildNotification.SetText("COMPUTER CHOSE " + color.ToUpper());
 
+        // A color value that is used multiple times below
+        const float X = 35f / 255f;
         switch (color)
         {
             case "Red":
-                wildNotification.color = new Color(255,35,35);
+                wildNotification.color = new Color(1, X, X);
                 break;
             case "Blue":
-                wildNotification.color = new Color(35, 35, 255);
+                wildNotification.color = new Color(X, X, 1);
                 break;
             case "Green":
-                wildNotification.color = new Color(35, 255, 35);
+                wildNotification.color = new Color(X, 1, X);
                 break;
             case "Yellow":
-                wildNotification.color = new Color(255, 208, 35);
+                wildNotification.color = new Color(1, 208 / 255f, X);
                 break;
         }
 
-        wildNotification.gameObject.SetActive(true);
-        yield return new WaitForSeconds(2f);
-        wildNotification.gameObject.SetActive(false);
+        wildNotification.transform.parent.gameObject.SetActive(true);
+        yield return new WaitForSeconds(3f);
+        wildNotification.transform.parent.gameObject.SetActive(false);
     }
 }
