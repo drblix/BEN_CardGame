@@ -1,12 +1,14 @@
 using System.Collections;
+using System.Collections.Generic;
 using UnityEngine;
 
 public class DrawingDeck : MonoBehaviour
 {
     private const int DECK_SIZE = 22;
-    private const int STARTING_DECK = 2;
+    private const int STARTING_DECK = 7;
 
     private Player player;
+    private Computer computer;
 
     [SerializeField]
     private GameObject playingCard;
@@ -32,8 +34,9 @@ public class DrawingDeck : MonoBehaviour
 
     private void Awake()
     {
-        GetComponent<BoxCollider>().enabled = false;
         player = FindObjectOfType<Player>();
+        computer = FindObjectOfType<Computer>();
+        GetComponent<BoxCollider>().enabled = false;
         player.playerDeck.Capacity = DECK_SIZE;
         StartCoroutine(StartingCards());
     }
@@ -58,7 +61,7 @@ public class DrawingDeck : MonoBehaviour
         }
     }
 
-    // 0 == Player; 1 == AI
+    // 0 == Player; 1 == Computer
     public void DrawCard(int drawer)
     {
         if (drawer == 0 && player.playerDeck.Count < DECK_SIZE)
@@ -79,6 +82,7 @@ public class DrawingDeck : MonoBehaviour
 
             RandomizeAttributes(card, false);
             
+            computer.computerDeck.Add(card);
             Vector2 slot = FindNextOpenSlot(card, drawer);
             StartCoroutine(card.MoveCard(slot, false));
         }
@@ -135,5 +139,36 @@ public class DrawingDeck : MonoBehaviour
         }
 
         return Vector2.zero;
+    }
+
+    
+    public bool CardsMoving(List<Card> deck)
+    {
+        foreach (Card card in deck)
+        {
+            if (card.IsMoving) {
+                return true;
+            }
+        }
+
+        return false;
+    }
+
+    /// <summary>
+    /// Shifts all cards in the deck to the next closest open slot
+    /// </summary>
+    /// <param name="deck">The deck to shift</param>
+    public IEnumerator ShiftCards(int deck)
+    {
+        List<Card> chosenDeck = deck == 0 ? player.playerDeck : computer.computerDeck;
+
+        foreach (Card card in chosenDeck)
+        {
+            card.filledSpot.SetFilled(false);
+            card.filledSpot = null;
+            Vector2 to = FindNextOpenSlot(card, deck);
+            StartCoroutine(card.MoveCard(to, false));
+            yield return new WaitForEndOfFrame();
+        }
     }
 }

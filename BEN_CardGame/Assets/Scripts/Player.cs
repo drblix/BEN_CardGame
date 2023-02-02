@@ -9,6 +9,7 @@ public class Player : MonoBehaviour
 
     public List<Card> playerDeck = new List<Card>();
 
+    // Setting to true will have the player start first
     public bool isTurn = true;
 
     private void Awake() {
@@ -17,7 +18,7 @@ public class Player : MonoBehaviour
     }
 
     private void Update() {
-        if (Input.GetMouseButtonDown(0) && isTurn) {
+        if (Input.GetMouseButtonDown(0)) {
             MouseClicked();
         }
     }
@@ -29,17 +30,17 @@ public class Player : MonoBehaviour
             if (hitInfo.collider) {
                 if (hitInfo.collider.CompareTag("PlayingCard")) {
                     Card card = hitInfo.collider.GetComponent<Card>();
-                    if (card.IsMoving || CardsMoving() || !card.OwnedByPlayer) { return; }
+                    if (card.IsMoving || drawingDeck.CardsMoving(playerDeck) || !card.OwnedByPlayer) { return; }
 
                     if (!card.Flipped) {
                         StartCoroutine(card.FlipCard());
                     }
-                    else if (placingDeck.CanPlaceCard(card)) {
+                    else if (placingDeck.CanPlaceCard(card) && isTurn) {
                         card.GetComponent<BoxCollider>().enabled = false;
                         card.filledSpot.SetFilled(false);
                         card.filledSpot = null;
                         playerDeck.Remove(card);
-                        StartCoroutine(ShiftCards());
+                        StartCoroutine(drawingDeck.ShiftCards(0));
                         placingDeck.PlaceCard(card, 0);
 
                         // AI's turn
@@ -50,29 +51,5 @@ public class Player : MonoBehaviour
                 }
             }
         }
-    }
-
-    public IEnumerator ShiftCards()
-    {
-        foreach (Card card in playerDeck)
-        {
-            card.filledSpot.SetFilled(false);
-            card.filledSpot = null;
-            Vector2 to = drawingDeck.FindNextOpenSlot(card, 0);
-            StartCoroutine(card.MoveCard(to, false));
-            yield return new WaitForEndOfFrame();
-        }
-    }
-
-    private bool CardsMoving()
-    {
-        foreach (Card card in playerDeck)
-        {
-            if (card.IsMoving) {
-                return true;
-            }
-        }
-
-        return false;
     }
 }

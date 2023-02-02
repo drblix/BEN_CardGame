@@ -42,7 +42,9 @@ public class Card : MonoBehaviour
         GetComponent<MeshRenderer>().material.SetTexture("_MainTex", texture);
     }
 
-    // Flips the card over
+    /// <summary>
+    /// Flips the cards over: specifically, so the non-logo side is displayed
+    /// </summary>
     public IEnumerator FlipCard() 
     {
         if (isFlipping) { yield break; }
@@ -92,6 +94,11 @@ public class Card : MonoBehaviour
         // Snaps card to position and sets flag to false
         transform.position = to;
         isMoving = false;
+    }
+
+    public override string ToString()
+    {
+        return "Color: " + color + " || Number: " + number;
     }
 
     public void SetColor(string c) => color = c;
