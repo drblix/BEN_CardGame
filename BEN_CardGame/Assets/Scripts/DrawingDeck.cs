@@ -40,6 +40,7 @@ public class DrawingDeck : MonoBehaviour
         player = FindObjectOfType<Player>();
         computer = FindObjectOfType<Computer>();
         placingDeck = FindObjectOfType<PlacingDeck>();
+        player.isTurn = false;
         GetComponent<BoxCollider>().enabled = false;
         player.playerDeck.Capacity = DECK_SIZE;
         StartCoroutine(StartingCards());
@@ -50,12 +51,13 @@ public class DrawingDeck : MonoBehaviour
         for (int i = 0; i < STARTING_DECK; i++)
         {
             yield return new WaitForSeconds(.35f);
-            DrawCard(0);
+            DrawCard(0, false);
             yield return new WaitForSeconds(.35f);
-            DrawCard(1);
+            DrawCard(1, false);
         }
 
         GetComponent<BoxCollider>().enabled = true;
+        player.isTurn = true;
     }
 
     public IEnumerator DealCards(int amount, int toDeck) {
@@ -63,17 +65,20 @@ public class DrawingDeck : MonoBehaviour
 
         for (int i = 0; i < amount; i++) {
             yield return new WaitForSeconds(.35f);
-            DrawCard(toDeck);
+            DrawCard(toDeck, true);
             if (deck.Count == DECK_SIZE) {
                 gameOver = true;
                 StartCoroutine(placingDeck.DisplayVictor("UNLUCKY..."));
+                break;
             }
         }
     }
 
     // 0 == Player; 1 == Computer
-    public void DrawCard(int drawer)
+    public void DrawCard(int drawer, bool drawTwo)
     {
+        if (HasPlayableCard(drawer) && !drawTwo) { return; }
+
         if (drawer == 0)
         {
             if (player.playerDeck.Count == DECK_SIZE) {
@@ -165,7 +170,6 @@ public class DrawingDeck : MonoBehaviour
         return Vector2.zero;
     }
 
-    
     public bool CardsMoving(List<Card> deck)
     {
         foreach (Card card in deck)
@@ -193,5 +197,20 @@ public class DrawingDeck : MonoBehaviour
             StartCoroutine(card.MoveCard(to, false));
             yield return new WaitForEndOfFrame();
         }
+    }
+
+    private bool HasPlayableCard(int deck)
+    {
+        if (!placingDeck.TopCard) { return false; }
+
+        List<Card> chosenDeck = deck == 0 ? player.playerDeck : computer.computerDeck;
+
+        foreach (Card card in chosenDeck)
+        {
+            if (card.Equals(placingDeck.TopCard))
+                return true;
+        }
+
+        return false;
     }
 }

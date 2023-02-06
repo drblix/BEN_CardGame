@@ -50,7 +50,7 @@ public class Player : MonoBehaviour
                     }
                 }
                 else if (hitInfo.collider.name.Equals("DrawingDeck")) {
-                    drawingDeck.DrawCard(0);
+                    drawingDeck.DrawCard(0, false);
                 }
             }
         }

@@ -23,11 +23,10 @@ public class Computer : MonoBehaviour
 
     public IEnumerator StartTurn()
     {
-        Debug.Log(placingDeck.TopCard.ToString());
         yield return new WaitForSeconds(Random.Range(1.5f, 3.25f));
         while (!PlaceCard())
         {
-            drawingDeck.DrawCard(1);
+            drawingDeck.DrawCard(1, false);
             yield return new WaitUntil(() => !drawingDeck.CardsMoving(computerDeck));
             yield return new WaitForSeconds(Random.Range(.4f, .9f));
         }
@@ -55,7 +54,7 @@ public class Computer : MonoBehaviour
                 continue;
             }
 
-            if (placingDeck.TopCard.Color == card.Color || placingDeck.TopCard.Number == card.Number)
+            if (card.Equals(placingDeck.TopCard))
             {
                 card.filledSpot.SetFilled(false);
                 card.filledSpot = null;

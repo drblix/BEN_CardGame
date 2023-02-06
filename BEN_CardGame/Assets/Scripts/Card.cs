@@ -102,4 +102,12 @@ public class Card : MonoBehaviour
     }
 
     public void SetColor(string c) => color = c;
+
+    public bool Equals (Card card) 
+    {
+        if (card.Number == "Wild" || !card)
+            return true;
+
+        return this.Number == card.Number || this.Color == card.Color;
+    }
 }

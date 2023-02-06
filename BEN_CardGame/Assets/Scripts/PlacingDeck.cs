@@ -62,14 +62,6 @@ public class PlacingDeck : MonoBehaviour
             }
         }
 
-        if (card.Number == "DrawTwo") {
-            if (fromDeck == 0) {
-                StartCoroutine(drawingDeck.DealCards(2, 1));
-            }
-            else {
-                StartCoroutine(drawingDeck.DealCards(2, 0));
-            }
-        }
 
         if (player.playerDeck.Count == 0) {
             StartCoroutine(DisplayVictor("PLAYER"));
@@ -78,6 +70,15 @@ public class PlacingDeck : MonoBehaviour
         else if (computer.computerDeck.Count == 0) {
             StartCoroutine(DisplayVictor("COMPUTER"));
             return;
+        }
+        
+        if (card.Number == "DrawTwo") {
+            if (fromDeck == 0) {
+                StartCoroutine(drawingDeck.DealCards(2, 1));
+            }
+            else {
+                StartCoroutine(drawingDeck.DealCards(2, 0));
+            }
         }
 
         if (card.Number == "Wild" && fromDeck == 0) {
