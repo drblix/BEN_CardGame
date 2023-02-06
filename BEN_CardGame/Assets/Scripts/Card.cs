@@ -105,7 +105,7 @@ public class Card : MonoBehaviour
 
     public bool Equals (Card card) 
     {
-        if (card.Number == "Wild" || !card)
+        if (!card || this.Number == "Wild")
             return true;
 
         return this.Number == card.Number || this.Color == card.Color;

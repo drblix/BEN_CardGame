@@ -56,6 +56,9 @@ public class DrawingDeck : MonoBehaviour
             DrawCard(1, false);
         }
 
+        yield return new WaitForSeconds(.35f);
+        DrawCard(2, false);
+
         GetComponent<BoxCollider>().enabled = true;
         player.isTurn = true;
     }
@@ -113,6 +116,18 @@ public class DrawingDeck : MonoBehaviour
             computer.computerDeck.Add(card);
             Vector2 slot = FindNextOpenSlot(card, drawer);
             StartCoroutine(card.MoveCard(slot, false));
+        }
+        else if (drawer == 2)
+        {
+            Card card = Instantiate(playingCard, transform.position, Quaternion.Euler(0f, 270f, 0f)).GetComponent<Card>();
+
+            do {
+                RandomizeAttributes(card, false);
+            } while(card.Number == "Wild" || card.Number == "DrawTwo");
+
+            card.GetComponent<AudioSource>().Play();
+            StartCoroutine(card.FlipCard());
+            placingDeck.PlaceCard(card, -1);
         }
     }
 
