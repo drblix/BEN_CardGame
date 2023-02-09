@@ -49,14 +49,14 @@ public class Computer : MonoBehaviour
         foreach (Card card in computerDeck)
         {
             // Treats wildcards as a last resort for the AI
-            if (card.Number == "Wild") {
+            if (card.Number == DrawingDeck.CardNumber.Wild) {
                 wildCards.Add(card);
                 continue;
             }
 
             if (card.Equals(placingDeck.TopCard))
             {
-                card.filledSpot.SetFilled(false);
+                card.filledSpot.Filled = false;
                 card.filledSpot = null;
 
                 StartCoroutine(card.FlipCard());
@@ -70,13 +70,13 @@ public class Computer : MonoBehaviour
 
         if (wildCards.Count > 0)
         {
-            wildCards[0].filledSpot.SetFilled(false);
+            wildCards[0].filledSpot.Filled = false;
             wildCards[0].filledSpot = null;
 
-            string chosenColor = DetermineWildColor();
+            DrawingDeck.CardColor chosenColor = DetermineWildColor();
             wildCards[0].SetColor(chosenColor);
 
-            StartCoroutine(NotifyWildCard(chosenColor));
+            StartCoroutine(NotifyWildCard(chosenColor.ToString()));
 
             StartCoroutine(wildCards[0].FlipCard());
             computerDeck.Remove(wildCards[0]);
@@ -89,27 +89,27 @@ public class Computer : MonoBehaviour
         return false;
     }
 
-    private string DetermineWildColor()
+    private DrawingDeck.CardColor DetermineWildColor()
     {
         string[] colors = { "Red", "Blue", "Green", "Yellow" };
         int[] clrAmnts = { 0, 0, 0, 0 };
 
         foreach (Card card in computerDeck)
         {
-            if (card.Number == "Wild") { continue; }
+            if (card.Number == DrawingDeck.CardNumber.Wild) { continue; }
 
             switch (card.Color)
             {
-                case "Red":
+                case DrawingDeck.CardColor.Red:
                     clrAmnts[0] += 1;
                     break;
-                case "Blue":
+                case DrawingDeck.CardColor.Blue:
                     clrAmnts[1] += 1;
                     break;
-                case "Yellow":
+                case DrawingDeck.CardColor.Yellow:
                     clrAmnts[2] += 1;
                     break;
-                case "Green":
+                case DrawingDeck.CardColor.Green:
                     clrAmnts[3] += 1;
                     break;
             }
@@ -123,20 +123,20 @@ public class Computer : MonoBehaviour
             switch (largestIndex)
             {
                 case 0:
-                    return "Red";
+                    return DrawingDeck.CardColor.Red;
                 case 1:
-                    return "Blue";
+                    return DrawingDeck.CardColor.Blue;
                 case 2:
-                    return "Yellow";
+                    return DrawingDeck.CardColor.Yellow;
                 case 3:
-                    return "Green";
+                    return DrawingDeck.CardColor.Green;
                 default:
-                    return colors[Random.Range(0, colors.Length)];
+                    return (DrawingDeck.CardColor)Random.Range(0, 4);
             }
         }
         else
         {
-            return colors[Random.Range(0, colors.Length)];
+            return (DrawingDeck.CardColor)Random.Range(0, 4);
         }
     }
 

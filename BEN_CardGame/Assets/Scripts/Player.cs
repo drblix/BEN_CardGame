@@ -40,7 +40,7 @@ public class Player : MonoBehaviour
                     }
                     else if (placingDeck.CanPlaceCard(card) && isTurn) {
                         card.GetComponent<BoxCollider>().enabled = false;
-                        card.filledSpot.SetFilled(false);
+                        card.filledSpot.Filled = false;
                         card.filledSpot = null;
                         playerDeck.Remove(card);
                         StartCoroutine(drawingDeck.ShiftCards(0));

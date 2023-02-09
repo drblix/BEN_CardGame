@@ -72,7 +72,7 @@ public class PlacingDeck : MonoBehaviour
             return;
         }
         
-        if (card.Number == "DrawTwo") {
+        if (card.Number == DrawingDeck.CardNumber.DrawTwo) {
             if (fromDeck == 0) {
                 StartCoroutine(drawingDeck.DealCards(2, 1));
             }
@@ -81,7 +81,7 @@ public class PlacingDeck : MonoBehaviour
             }
         }
 
-        if (card.Number == "Wild" && fromDeck == 0) {
+        if (card.Number == DrawingDeck.CardNumber.Wild && fromDeck == 0) {
             // Show UI and wait for response
             wildcardMenu.SetActive(true);
             player.isTurn = false;
@@ -114,20 +114,20 @@ public class PlacingDeck : MonoBehaviour
     {
         if (!topCard || cheatMode) { return true; }
 
-        string topCardColor = topCard.Color;
-        string topCardNumber = topCard.Number;
+        DrawingDeck.CardColor topCardColor = topCard.Color;
+        DrawingDeck.CardNumber topCardNumber = topCard.Number;
 
-        if (card.Number == "Wild") {
+        if (card.Number == DrawingDeck.CardNumber.Wild) {
             return true;
         }
-
+        
         return card.Color == topCardColor || card.Number == topCardNumber;
     }
 
-    public void WildCardColor(string color)
+    public void WildCardColor(int color)
     {
-        if (topCard.Number == "Wild") {
-            topCard.SetColor(color);
+        if (topCard.Number == DrawingDeck.CardNumber.Wild) {
+            topCard.SetColor((DrawingDeck.CardColor)color);
         }
 
         wildcardMenu.SetActive(false);

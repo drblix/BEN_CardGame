@@ -13,11 +13,11 @@ public class Card : MonoBehaviour
     private const float FLIP_SPEED = 3f;
 
 
-    private string number = "One";
-    private string color = "Red";
+    private DrawingDeck.CardNumber number = DrawingDeck.CardNumber.One;
+    private DrawingDeck.CardColor color = DrawingDeck.CardColor.Red;
     
-    public string Number { get { return number; } }
-    public string Color { get { return color; } }
+    public DrawingDeck.CardNumber Number { get { return number; } }
+    public DrawingDeck.CardColor Color { get { return color; } }
 
     // false means logo is showing, true means number and color is showing
     private bool flipped = false;
@@ -34,7 +34,7 @@ public class Card : MonoBehaviour
         source = GetComponent<AudioSource>();
     }
 
-    public void SetAttributes(string c, string num, Texture texture, bool owned)
+    public void SetAttributes(DrawingDeck.CardColor c, DrawingDeck.CardNumber num, Texture texture, bool owned)
     {
         color = c;
         number = num;
@@ -81,7 +81,7 @@ public class Card : MonoBehaviour
         isMoving = true;
 
         if (leaveSpot && filledSpot) { 
-            filledSpot.SetFilled(false);
+            filledSpot.Filled = false;
             filledSpot = null;
         }
 
@@ -101,11 +101,11 @@ public class Card : MonoBehaviour
         return "Color: " + color + " || Number: " + number;
     }
 
-    public void SetColor(string c) => color = c;
+    public void SetColor(DrawingDeck.CardColor c) => color = c;
 
     public bool Equals (Card card) 
     {
-        if (!card || this.Number == "Wild")
+        if (!card || this.Number == DrawingDeck.CardNumber.Wild)
             return true;
 
         return this.Number == card.Number || this.Color == card.Color;

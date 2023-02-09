@@ -35,6 +35,28 @@ public class DrawingDeck : MonoBehaviour
 
     private readonly string[] cardNumbers = { "One", "Two", "Three", "Four", "Five", "Six", "Seven", "Eight", "Nine", "Wild", "DrawTwo" };
 
+    public enum CardColor
+    {
+        Red,
+        Blue,
+        Green,
+        Yellow
+    }
+
+    public enum CardNumber
+    {
+        One,
+        Two,
+        Three,
+        Four,
+        Five,
+        Six,
+        Seven,
+        Eight,
+        Nine,
+        Wild,
+        DrawTwo
+    }
     private void Awake()
     {
         player = FindObjectOfType<Player>();
@@ -123,7 +145,7 @@ public class DrawingDeck : MonoBehaviour
 
             do {
                 RandomizeAttributes(card, false);
-            } while(card.Number == "Wild" || card.Number == "DrawTwo");
+            } while(card.Number == CardNumber.Wild || card.Number == CardNumber.DrawTwo);
 
             card.GetComponent<AudioSource>().Play();
             StartCoroutine(card.FlipCard());
@@ -135,13 +157,13 @@ public class DrawingDeck : MonoBehaviour
     // 'card' == the card to be randomized
     private void RandomizeAttributes(Card card, bool ownedByPlayer)
     {
-        string chosenColor = cardColors[Random.Range(0, cardColors.Length)];
-        string chosenNumber = cardNumbers[Random.Range(0, cardNumbers.Length)];
+        CardColor chosenColor = (CardColor)Random.Range(0, 4);
+        CardNumber chosenNumber = (CardNumber)Random.Range(0, 11);
 
-        string combinedStr = chosenColor + chosenNumber;
+        string combinedStr = chosenColor.ToString() + chosenNumber.ToString();
         Texture chosenText = null;
 
-        if (chosenNumber != "Wild")
+        if (chosenNumber != CardNumber.Wild)
         {
             foreach (Texture texture in cardTextures)
             {
@@ -175,7 +197,7 @@ public class DrawingDeck : MonoBehaviour
         {
             if (!slot.Filled)
             {
-                slot.SetFilled(true);
+                slot.Filled = true;
                 card.filledSpot = slot;
                 card.transform.SetParent(slot.transform);
                 return slot.transform.position;
@@ -206,7 +228,7 @@ public class DrawingDeck : MonoBehaviour
         List<Card> chosenDeck = deck == 0 ? player.playerDeck : computer.computerDeck;
         foreach (Card card in chosenDeck)
         {
-            card.filledSpot.SetFilled(false);
+            card.filledSpot.Filled = false;
             card.filledSpot = null;
             Vector2 to = FindNextOpenSlot(card, deck);
             StartCoroutine(card.MoveCard(to, false));
